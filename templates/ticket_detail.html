@@ -1,0 +1,121 @@
+<!doctype html>
+{% extends "base.html" %}
+{% block title %}Ticket #{{ ticket.id }} | IT Help Desk{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3">Ticket #{{ ticket.id }}</h1>
+        <p class="text-secondary mb-0">Support request details</p>
+    </div>
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+        Back to Tickets
+    </a>
+</div>
+
+<div class="main-card p-4">
+    <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
+        <h2 class="h4">{{ ticket.title }}</h2>
+        <span class="badge text-bg-primary align-self-start">
+            {{ ticket.status }}
+        </span>
+    </div>
+
+    <hr>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="text-secondary small">Employee</div>
+            <div class="fw-semibold">{{ ticket.employee_name }}</div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="text-secondary small">Category</div>
+            <div class="fw-semibold">{{ ticket.category }}</div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="text-secondary small">Priority</div>
+            <div class="fw-semibold">{{ ticket.priority }}</div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="text-secondary small">Created At</div>
+            <div class="fw-semibold">{{ ticket.created_at }}</div>
+        </div>
+
+        <div class="col-12">
+            <div class="text-secondary small mb-2">Issue Description</div>
+            <div class="p-3 bg-light rounded text-break"
+                 style="white-space: pre-wrap;">{{ ticket.description }}</div>
+        </div>
+    </div>
+</div>
+{% if session.get("admin_id") %}
+<div class="card mt-4">
+    <div class="card-body">
+        <h5 class="card-title">Update Ticket Status</h5>
+
+        <form method="POST"
+              action="{{ url_for('update_ticket_status', ticket_id=ticket['id']) }}">
+
+            <label for="status" class="form-label">Select Status</label>
+
+            <select name="status" id="status" class="form-select mb-3">
+                <option value="Open"
+                    {% if ticket['status'] == 'Open' %}selected{% endif %}>
+                    Open
+                </option>
+
+                <option value="In Progress"
+                    {% if ticket['status'] == 'In Progress' %}selected{% endif %}>
+                    In Progress
+                </option>
+
+                <option value="Resolved"
+                    {% if ticket['status'] == 'Resolved' %}selected{% endif %}>
+                    Resolved
+                </option>
+            </select>
+
+            <button type="submit" class="btn btn-primary">
+                Update Status
+            </button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<div class="card mt-4">
+    <div class="card-body">
+        <h5 class="card-title">Assigned Technician</h5>
+
+        <p>
+            {{ ticket['assigned_to'] or 'Not Assigned' }}
+        </p>
+
+        {% if session.get("admin_id") %}
+        <form method="POST"
+              action="{{ url_for('assign_ticket', ticket_id=ticket['id']) }}">
+
+            <label class="form-label">
+                Assign to Technician
+            </label>
+
+            <input
+                type="text"
+                name="assigned_to"
+                class="form-control mb-3"
+                placeholder="Enter technician name"
+                maxlength="100"
+                required>
+
+            <button type="submit" class="btn btn-primary">
+                Assign Ticket
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

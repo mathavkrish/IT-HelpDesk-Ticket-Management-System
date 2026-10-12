@@ -1,0 +1,176 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container py-4">
+
+    <h2 class="mb-2">Dashboard Analytics</h2>
+    <p class="text-muted mb-4">
+        IT support ticket performance overview
+    </p>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <p class="text-muted">Total Tickets</p>
+                    <h2>{{ total_tickets }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <p class="text-muted">Open Tickets</p>
+                    <h2>{{ status_counts["Open"] }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <p class="text-muted">In Progress</p>
+                    <h2>{{ status_counts["In Progress"] }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <p class="text-muted">Resolved</p>
+                    <h2>{{ status_counts["Resolved"] }}</h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5>Tickets by Status</h5>
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5>Tickets by Priority</h5>
+                    <canvas id="priorityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5>Tickets by Category</h5>
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5>Technician Workload</h5>
+                    <canvas id="technicianChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+<div id="analytics-data"
+     data-status='{{ status_counts | tojson }}'
+     data-priority='{{ priority_counts | tojson }}'
+     data-category='{{ category_counts | tojson }}'
+     data-technician='{{ technician_counts | tojson }}'
+     hidden>
+</div>
+<script>
+
+const analyticsData = document.getElementById("analytics-data");
+
+const statusCounts = JSON.parse(analyticsData.dataset.status);
+const priorityCounts = JSON.parse(analyticsData.dataset.priority);
+const categoryCounts = JSON.parse(analyticsData.dataset.category);
+const technicianCounts = JSON.parse(analyticsData.dataset.technician);
+
+
+
+function createChart(id, type, data, colors) {
+    const canvas = document.getElementById(id);
+
+    new Chart(canvas, {
+        type: type,
+        data: {
+            labels: Object.keys(data),
+            datasets: [{
+                label: "Tickets",
+                data: Object.values(data),
+                backgroundColor: colors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: type === "doughnut" || type === "pie"
+                }
+            },
+            scales: type === "bar" ? {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            } : {}
+        }
+    });
+}
+
+createChart(
+    "statusChart",
+    "doughnut",
+    statusCounts,
+    ["#ef4444", "#f59e0b", "#22c55e"]
+);
+
+createChart(
+    "priorityChart",
+    "bar",
+    priorityCounts,
+    ["#22c55e", "#f59e0b", "#ef4444"]
+);
+
+createChart(
+    "categoryChart",
+    "pie",
+    categoryCounts,
+    ["#3b82f6", "#8b5cf6", "#14b8a6", "#f97316"]
+);
+
+createChart(
+    "technicianChart",
+    "bar",
+    technicianCounts,
+    "#3b82f6"
+);
+</script>
+
+{% endblock %}

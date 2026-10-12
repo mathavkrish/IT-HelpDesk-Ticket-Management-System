@@ -1,0 +1,111 @@
+<!doctype html>
+{% extends "base.html" %}
+{% block title %}Tickets | IT Help Desk{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h1 class="h3 mb-1">Support Tickets</h1>
+        <p class="text-secondary mb-0">Track and review reported IT issues.</p>
+    </div>
+    <a href="{{ url_for('new_ticket') }}" class="btn btn-primary">
+        Create Ticket
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="main-card p-3">
+            <div class="text-secondary">Total Tickets</div>
+            <div class="fs-3 fw-bold">{{ tickets|length }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="main-card p-3">
+            <div class="text-secondary">Open Tickets</div>
+            <div class="fs-3 fw-bold">
+                {{ tickets|selectattr('status', 'equalto', 'Open')|list|length }}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="main-card p-3">
+            <div class="text-secondary">High Priority</div>
+            <div class="fs-3 fw-bold">
+                {{ tickets|selectattr('priority', 'equalto', 'High')|list|length }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="main-card p-3 p-md-4">
+    <div class="mb-3">
+        <input type="search" id="ticketSearch" class="form-control"
+               placeholder="Search tickets by title, employee or category...">
+    </div>
+
+    {% if tickets %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle" id="ticketsTable">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                <tr>
+                    <td>#{{ ticket.id }}</td>
+                    <td>
+                        <div class="fw-semibold">{{ ticket.title }}</div>
+                        <small class="text-secondary">{{ ticket.employee_name }}</small>
+                    </td>
+                    <td>{{ ticket.category }}</td>
+                    <td>
+                        <span class="badge
+                            {% if ticket.priority == 'High' %}text-bg-danger
+                            {% elif ticket.priority == 'Medium' %}text-bg-warning
+                            {% else %}text-bg-success{% endif %}">
+                            {{ ticket.priority }}
+                        </span>
+                    </td>
+                    <td><span class="badge text-bg-primary">{{ ticket.status }}</span></td>
+                    <td>{{ ticket.created_at }}</td>
+                    <td>
+                        <a class="btn btn-outline-primary btn-sm"
+                           href="{{ url_for('ticket_detail', ticket_id=ticket.id) }}">
+                            View
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <div class="text-center py-5">
+            <h2 class="h5">No tickets yet</h2>
+            <p class="text-secondary">Create your first support ticket to get started.</p>
+            <a href="{{ url_for('new_ticket') }}" class="btn btn-primary">
+                Create First Ticket
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+const searchInput = document.getElementById("ticketSearch");
+searchInput.addEventListener("input", function () {
+    const query = this.value.toLowerCase();
+    document.querySelectorAll("#ticketsTable tbody tr").forEach(row => {
+        row.hidden = !row.innerText.toLowerCase().includes(query);
+    });
+});
+</script>
+{% endblock %}
